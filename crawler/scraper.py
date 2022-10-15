@@ -11,7 +11,7 @@ with open('../data/recipe_urls.pickle', 'rb') as handle:
 
     
 
-column_names = ["Title", "Ingredients", "Instructions", "CookingTime", "Keywords", "NutritionValue", "Source"]
+column_names = ["title", "ingredients", "instructions", "cookingTime", "keywords", "nutritionValue", "source"]
 recipes = pd.DataFrame(columns = column_names)
 
 for i in range(len(recipe_urls_df)):
@@ -46,12 +46,14 @@ for i in range(len(recipe_urls_df)):
             keywords = None
             
         if 'nutrition' in res:
-            nutrition = res['nutrition']
+            n = res['nutrition']
+            del n["@type"]
+            nutrition = n
         else:
             nutrition = None
         #soupjs.append(res)
-        recipes = recipes.append({'Title': title, 'Ingredients': ingredients, 'Instructions': instructions,'CookingTime': 
-          cook_time, 'Keywords': keywords, 'NutritionValue': nutrition, 'Source': w1}, ignore_index=True)
+        recipes = recipes.append({'title': title, 'ingredients': ingredients, 'instructions': instructions,'cookingTime': 
+          cook_time, 'keywords': keywords, 'nutritionValue': nutrition, 'source': w1}, ignore_index=True)
         print(f'{i} is now done [website 1]')
     
     
@@ -93,8 +95,8 @@ for i in range(len(recipe_urls_df)):
         else:
             nutrition = None
         #soupjs.append(res)
-        recipes = recipes.append({'Title': title, 'Ingredients': ingredients, 'Instructions': instructions,'CookingTime': 
-          cook_time, 'Keywords': keywords, 'NutritionValue': nutrition, 'Source': w2}, ignore_index=True)
+        recipes = recipes.append({'title': title, 'ingredients': ingredients, 'instructions': instructions,'cookingTime': 
+          cook_time, 'keywords': keywords, 'nutritionValue': nutrition, 'source': w2}, ignore_index=True)
         print(f'{i} is now done [website 2]')
         print('------------------------------')
     
