@@ -6,7 +6,7 @@ import json
 import asyncio
 import sys
 sys.path.insert(0,"..")
-from db_client.azure_cosmos import *
+from services.azure_cosmos import *
 
 def cookTimeInMin(text):
     try:
@@ -48,11 +48,7 @@ if __name__=="__main__":
                     "nutritionValue", "source", "cookingTimeInMin", "ingredientsCount", "calorieCount" ]
     recipes_cleaned = pd.DataFrame(columns = column_names)
 
-    config = open('../data/config.txt')
-    config = json.load(config)
-
     database_name = 'RecipesDb'
-    database_link = 'dbs/' + 'RecipesDb'
     container_name = 'RecipesContainer'
     
     db = DbClient()

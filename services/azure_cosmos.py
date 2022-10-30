@@ -15,7 +15,7 @@ class DbClient:
             db.read()
             return db
         except exceptions.CosmosResourceNotFoundError:
-            print("-- creating database --")
+            print('-- creating database --')
             return self.client.create_database(db_name)
 
     
@@ -25,7 +25,7 @@ class DbClient:
             container.read()   
             return container
         except exceptions.CosmosResourceNotFoundError:
-            print("f-- creating container with {path_name} as partion key --")
+            print(f'-- creating container with {path_name} as partion key --')
             return db.create_container(
                 id=container_name,
                 partition_key=PartitionKey(path="/"+ path_name))
@@ -35,15 +35,17 @@ class DbClient:
     def save_record(self, container, item):
         try:
             container.create_item(item)
-            print(f"-- item added to the db --")
+            print(f'-- item added to the db --')
         except exceptions.CosmosResourceExistsError:
             container.upsert_item(item)
-            print(f"-- item updated to the db --")
+            print(f'-- item updated to the db --')
 
-    async def get_recipes(container, items_to_read):
-        # Read items (key value lookups by partition key and id, aka point reads)
-        # <read_item>
-        for family in items_to_read:
-            item_response = await container.read_item(item=family['id'], partition_key=family['lastName'])
-            request_charge = container.client_connection.last_response_headers['x-ms-request-charge']
-            print('Read item with id {0}. Operation consumed {1} request units'.format(item_response['id'], (request_charge)))
+    def execute_query(self, container, query):
+        try:
+            items = []
+            for item in container.query_items(query=query, enable_cross_partition_query=True):
+                items.append(dict(item))
+            print(f'-- Query execution success --')
+            return items
+        except:
+            print(f'-- Query execution failed --')
