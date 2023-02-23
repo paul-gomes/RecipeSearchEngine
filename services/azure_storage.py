@@ -31,10 +31,6 @@ class AzureStorageClient:
             d = json.dumps(data)
             blob.upload_blob(d, overwrite=True)
             print(f'-- {fileName} is uploaded to azure storage --')
-            # with open(fileName, "rb") as data:
-            #     encoded_string = a_string.encode()
-            #     byte_array = bytearray(encoded_string)
-            #     blob.upload_blob(data.encode('utf-8'))
         except:
             print(f'-- exception occured while uploading {fileName} -- ')
             

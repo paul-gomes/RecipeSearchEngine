@@ -18,7 +18,7 @@ def ConvertDictValueSetToList(dictSet):
     newDict.update({"id": '1'})
     return newDict 
 
-def prepare_tfidf_for_json(dictSet):
+def prepare_dict_for_json(dictSet):
     newDict = {}
     for key in dictSet:
         k = str(key)
@@ -65,27 +65,26 @@ data_df = data_df.set_index('id')
 data_p = Pre_Process(data_df)
 p_data = data_p.data_preprocess()
 
-
+term_prox = {}
 term_df = {}
-#term_prox = {}
 for index, row in p_data.iterrows():
+    recipe = []  #need to combine all the columns for term-proximity calculation 
     for col in p_data.columns:
-        #pos = {}
         words = word_tokenize(str(row[col]))
-        # for i in range(len(words)): # we need the positions for term proximity
-        #     w = words[i]
-        #     try:
-        #         pos[w].append(i)
-        #     except:
-        #         pos[w] = [i]
-        
+        recipe.extend(words) #may need to remove ingredients, not sure how useful it would be for term proximity
         for w in words:
             try:
                 term_df[w].add(index)
-                #term_prox[str(index)+"__"+w].add(pos[w])
             except:
                 term_df[w] = {index}
-                #term_prox[str(index)+"__"+w] = pos[w]
+    
+    
+    #term positions for term proximity
+    for i in range(len(recipe)):
+        try:
+            term_prox[index, recipe[i]].append(i)
+        except:
+            term_prox[index, recipe[i]] = [i]
 
 
 term_df = ConvertDictValueSetToList(term_df)
@@ -94,13 +93,16 @@ term_df = ConvertDictValueSetToList(term_df)
 storage.upload_dict_as_json(storage_container, term_df, 'term_df')
 
 
-#Save term document frequency as a pickle file and in the database
+#Save term document frequency as a pickle file
 with open('../Data/term-df.pickle', 'wb') as handle:
     pickle.dump(term_df, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-# with open('../Data/term-prox.pickle', 'wb') as handle:
-#     pickle.dump(term_prox, handle, protocol=pickle.HIGHEST_PROTOCOL)
+#upload term position dictionary in azure storage as json
+term_prox = prepare_dict_for_json(term_prox)
+storage.upload_dict_as_json(storage_container, term_prox, 'term_prox')
+with open('../Data/term-prox.pickle', 'wb') as handle:
+    pickle.dump(term_prox, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 
@@ -151,7 +153,7 @@ for key in  tf_idf:
 for key in tf_idf_title_ingredient:
     tf_idf[key] = tf_idf_title_ingredient[key]
     
-tf_idf = prepare_tfidf_for_json(tf_idf)
+tf_idf = prepare_dict_for_json(tf_idf)
 
 #upload tf-idf score in azure storage as json
 #beacuse azure cosmos db throws error "request limit size exceeded"
